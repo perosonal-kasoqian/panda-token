@@ -20,6 +20,7 @@ contract Main is ERC721 {
     uint MintOneForWl = 0.0088 ether;
 
     bytes32 public root;
+    uint startTime;
 
     // contract and token
     string contractURI;
@@ -30,19 +31,21 @@ contract Main is ERC721 {
         string memory _symbol,
         string memory _contranctURI,
         string memory _baseURI,
-        bytes32 _rootNode
+        bytes32 _rootNode,
+        uint _startTime
     ) ERC721(_name, _symbol) {
         // init config
         owner = msg.sender;
         contractURI = _contranctURI;
         baseURI = _baseURI;
         root = _rootNode;
+        startTime = _startTime;
 
         _tokenIds.increment();
     }
 
     function mint(address player) private {
-        uint256 tokenId = _tokenIds.current();
+        uint tokenId = _tokenIds.current();
         _mint(player, tokenId);
         _tokenIds.increment();
     }
@@ -50,16 +53,21 @@ contract Main is ERC721 {
     function mintGuest(address player, uint8 times) external payable {
         require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
         require(msg.value >= MintOneForUser * times, "ERR_NOT_ENOUGH_ETH");
-        require(minAmount <= times && times <= maxAmount);
 
         for (uint i = 0; i < times; i++) {
             mint(player);
         }
     }
 
-    function mintWhiteList(address player, bytes32[] memory proof, uint8 times) external {
+    function mintWhiteList(
+        address player,
+        bytes32[] memory proof,
+        uint8 times
+    ) external payable {
         require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
+        require(msg.value >= MintOneForWl * times, "ERR_NOT_ENOUGH_ETH");
         require(isWhiteLists(proof, keccak256(abi.encodePacked(player))));
+
         for (uint i = 0; i < maxAmount; i++) {
             mint(player);
         }
@@ -80,11 +88,7 @@ contract Main is ERC721 {
         root = _root;
     }
 
-    function isWhiteLists(bytes32[] memory proof, bytes32 leaf)
-        private
-        view
-        returns (bool)
-    {
+    function isWhiteLists(bytes32[] memory proof, bytes32 leaf) private view returns (bool) {
         return MerkleProof.verify(proof, root, leaf);
     }
 
@@ -96,19 +100,16 @@ contract Main is ERC721 {
         baseURI = _baseURI;
     }
 
-    function tokenURI(uint256 randomIndex)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        return string.concat(baseURI, Strings.toString(randomIndex), ".json");
+    function tokenURI(uint tokenId) public view override returns (string memory) {
+        return string.concat(baseURI, Strings.toString(tokenId), ".json");
     }
 
-    function withdraw() public payable onlyOwner {
-        (bool success, ) = payable(msg.sender).call{
-            value: address(this).balance
-        }("");
+    function setStartTime(uint _startTime) external onlyOwner {
+        startTime = _startTime;
+    }
+
+    function withdraw() external payable onlyOwner {
+        (bool success, ) = payable(msg.sender).call{value: address(this).balance}("");
         require(success);
     }
 
