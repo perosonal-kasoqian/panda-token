@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract CheersPals is ERC721URIStorage {
+contract Main is ERC721 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -48,8 +48,7 @@ contract CheersPals is ERC721URIStorage {
     }
 
     function mintGuest(address player, uint8 times) external payable {
-        require((_tokenIds + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
-
+        require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
         require(msg.value >= MintOneForUser * times, "ERR_NOT_ENOUGH_ETH");
         require(minAmount <= times && times <= maxAmount);
 
@@ -58,8 +57,8 @@ contract CheersPals is ERC721URIStorage {
         }
     }
 
-    function mintWhiteList(address player, bytes32[] memory proof) external {
-        require((_tokenIds + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
+    function mintWhiteList(address player, bytes32[] memory proof, uint8 times) external {
+        require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
         require(isWhiteLists(proof, keccak256(abi.encodePacked(player))));
         for (uint i = 0; i < maxAmount; i++) {
             mint(player);
@@ -67,7 +66,7 @@ contract CheersPals is ERC721URIStorage {
     }
 
     function mintMore(address player, uint8 times) external onlyOwner {
-        require((_tokenIds + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
+        require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
         for (uint key = 0; key < times; key++) {
             mint(player);
         }
