@@ -13,11 +13,11 @@ contract Main is ERC721 {
     address owner;
 
     // config
-    uint32 supplyTotal = 10000;
+    uint32 supplyTotal = 5555;
     uint8 maxAmount = 5;
     uint8 minAmount = 1;
-    uint MintOneForUser = 0.0088 ether;
-    uint MintOneForWl = 0.0088 ether;
+    uint MintOneForUser = 0.001 ether;
+    uint MintOneForWl = 0 ether;
 
     bytes32 public root;
     uint startTime;
@@ -26,19 +26,19 @@ contract Main is ERC721 {
     string contractURI;
     string baseURI;
 
+    mapping(address => uint8) userHasMint;
+
     constructor(
         string memory _name,
         string memory _symbol,
         string memory _contranctURI,
         string memory _baseURI,
-        bytes32 _rootNode,
         uint _startTime
     ) ERC721(_name, _symbol) {
         // init config
         owner = msg.sender;
         contractURI = _contranctURI;
         baseURI = _baseURI;
-        root = _rootNode;
         startTime = _startTime;
 
         _tokenIds.increment();
@@ -50,41 +50,20 @@ contract Main is ERC721 {
         _tokenIds.increment();
     }
 
-    function mintGuest(address player, uint8 times) external payable {
-        require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
-        require(msg.value >= MintOneForUser * times, "ERR_NOT_ENOUGH_ETH");
-
+    function mintGuest(uint8 times) external payable onlyMint(times, false) {
         for (uint i = 0; i < times; i++) {
-            mint(player);
+            mint(msg.sender);
         }
     }
 
-    function mintWhiteList(
-        address player,
-        bytes32[] memory proof,
-        uint8 times
-    ) external payable {
-        require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
-        require(msg.value >= MintOneForWl * times, "ERR_NOT_ENOUGH_ETH");
+    function mintWhiteList(bytes32[] memory proof, uint8 times) external payable onlyMint(times, true) {
         require(isWhiteLists(proof, keccak256(abi.encodePacked(player))));
-
         for (uint i = 0; i < maxAmount; i++) {
-            mint(player);
+            mint(msg.sender);
         }
     }
 
-    function mintMore(address player, uint8 times) external onlyOwner {
-        require((_tokenIds.current() + times) <= supplyTotal, "ERR_MINT_OVERFLOW_MAX");
-        for (uint key = 0; key < times; key++) {
-            mint(player);
-        }
-    }
-
-    function setMintTotal(uint32 _supplyTotal) external onlyOwner {
-        supplyTotal = _supplyTotal;
-    }
-
-    function setMerkleTreeRoot(bytes32 _root) external onlyOwner {
+    function setMerkleRoot(bytes32 _root) external onlyOwner {
         root = _root;
     }
 
@@ -116,5 +95,18 @@ contract Main is ERC721 {
     modifier onlyOwner() {
         require(msg.sender == owner, "ERR_ONLY_OWNER");
         _;
+    }
+
+    modifier onlyMint(uint8 times, bool isWlType) {
+        require((_tokenIds.current() + times) <= supplyTotal && (userHasMint[msg.sender] + times) <= maxAmount, "ERR_MINT_OVERFLOW_MAX");
+        require(block.timestamp >= startTime, "ERR_NOT_START");
+
+        if (isWlType) {
+            require(msg.value >= MintOneForWl * times, "ERR_NOT_ENOUGH_ETH");
+        } else {
+            require(msg.value >= MintOneForUser * times, "ERR_NOT_ENOUGH_ETH");
+        }
+        _;
+        userHasMint[msg.sender] += times;
     }
 }
