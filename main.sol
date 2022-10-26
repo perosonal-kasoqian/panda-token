@@ -23,7 +23,7 @@ contract Main is ERC721 {
     uint startTime;
 
     // contract and token
-    string contractURI;
+    string public contractURI;
     string baseURI;
 
     mapping(address => uint8) userHasMint;
