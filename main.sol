@@ -16,8 +16,8 @@ contract Main is ERC721 {
     uint32 supplyTotal = 5555;
     uint8 maxAmount = 5;
     uint8 minAmount = 1;
-    uint MintOneForUser = 0.001 ether;
-    uint MintOneForWl = 0 ether;
+    uint MintOneForUser = 0.08 ether;
+    uint MintOneForWl = 0.06 ether;
 
     bytes32 public root;
     uint startTime;
@@ -63,28 +63,12 @@ contract Main is ERC721 {
         }
     }
 
-    function setMerkleRoot(bytes32 _root) external onlyOwner {
-        root = _root;
-    }
-
     function isWhiteLists(bytes32[] memory proof, bytes32 leaf) private view returns (bool) {
         return MerkleProof.verify(proof, root, leaf);
     }
 
-    function setContractURI(string memory _contractURI) external {
-        contractURI = _contractURI;
-    }
-
-    function setBaseURI(string memory _baseURI) external {
-        baseURI = _baseURI;
-    }
-
     function tokenURI(uint tokenId) public view override returns (string memory) {
         return string.concat(baseURI, Strings.toString(tokenId), ".json");
-    }
-
-    function setStartTime(uint _startTime) external onlyOwner {
-        startTime = _startTime;
     }
 
     function withdraw() external payable onlyOwner {
@@ -108,5 +92,21 @@ contract Main is ERC721 {
         }
         _;
         userHasMint[msg.sender] += times;
+    }
+
+    function setStartTime(uint _startTime) external onlyOwner {
+        startTime = _startTime;
+    }
+
+    function setContractURI(string memory _contractURI) external {
+        contractURI = _contractURI;
+    }
+
+    function setBaseURI(string memory _baseURI) external {
+        baseURI = _baseURI;
+    }
+
+    function setMerkleRoot(bytes32 _root) external onlyOwner {
+        root = _root;
     }
 }
