@@ -57,7 +57,7 @@ contract Main is ERC721 {
     }
 
     function mintWhiteList(bytes32[] memory proof, uint8 times) external payable onlyMint(times, true) {
-        require(isWhiteLists(proof, keccak256(abi.encodePacked(player))));
+        require(isWhiteLists(proof, keccak256(abi.encodePacked(msg.sender))));
         for (uint i = 0; i < maxAmount; i++) {
             mint(msg.sender);
         }
