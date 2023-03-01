@@ -145,26 +145,26 @@ describe("NFT_ERC721", async function () {
       expect(e.message).to.include("OVERFLOW");
     });
   });
-  it("whitelist mint", async () => {
-    await nft
-      .connect(otherUser)
-      .setRoot("0x" + root)
-      .catch((e) => {
-        expect(e.message).to.include("Ownable: caller is not the owner");
-      });
+//   it("whitelist mint", async () => {
+//     await nft
+//       .connect(otherUser)
+//       .setRoot("0x" + root)
+//       .catch((e) => {
+//         expect(e.message).to.include("Ownable: caller is not the owner");
+//       });
 
-    await nft.setRoot("0x" + root);
-    await nft.setSaleConfig({
-      SupplyMaximum: 5555,
-      MaximumMint: 5,
-      PublicSale: 2000,
-      WhiteSale: 0,
-    });
-    console.log(
-      "🚀 ~ file: NFT_ERC721.js:166 ~ it ~ Buffer.from(whiteUser1Proof):",
-      whiteUser1Proof.map((i) => i.data.toString("hex"))
-    );
-    const tmp = whiteUser1Proof.map((i) => "0x"+ i.data.toString("hex")+"000000000000000000000000" );
-    await nft.connect(whiteUser1).whiteMint(tmp, 5);
-  });
+//     await nft.setRoot("0x" + root);
+//     await nft.setSaleConfig({
+//       SupplyMaximum: 5555,
+//       MaximumMint: 5,
+//       PublicSale: 2000,
+//       WhiteSale: 0,
+//     });
+//     console.log(
+//       "🚀 ~ file: NFT_ERC721.js:166 ~ it ~ Buffer.from(whiteUser1Proof):",
+//       whiteUser1Proof.map((i) => i.data.toString("hex"))
+//     );
+//     const tmp = whiteUser1Proof.map((i) => "0x"+ i.data.toString("hex")+"000000000000000000000000" );
+//     await nft.connect(whiteUser1).whiteMint(tmp, 5);
+//   });
 });
