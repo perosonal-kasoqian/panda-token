@@ -15,13 +15,13 @@ async function main() {
     startTime: 0,
   };
 
-  const NFT = await hre.ethers.getContractFactory("Main");
+  const NFT = await hre.ethers.getContractFactory("NFT_ERC721");
   const nft = await NFT.deploy(
     config.name,
     config.symbol,
-    config.contractURI,
-    config.baseURI,
-    config.startTime
+    // config.contractURI,
+    // config.baseURI,
+    // config.startTime
   );
 
   await nft.deployed();
