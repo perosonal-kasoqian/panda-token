@@ -69,6 +69,8 @@ contract NFT_ERC721 is ERC721, Ownable {
         return MerkleProof.verify(proof, customConfig.Root, leaf);
     }
 
+    receive() external payable {}
+
     // ============================= ADMINS CONFIG ====================================
 
     function setSaleConfig(SaleConfig memory config) external onlyOwner {
@@ -84,7 +86,7 @@ contract NFT_ERC721 is ERC721, Ownable {
     }
 
     function adminMint(address reciver, uint times) external onlyOwner {
-        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum);
+        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum,"OVERFLOW");
         for (uint i; i < times; i++) {
             mint(reciver);
         }
