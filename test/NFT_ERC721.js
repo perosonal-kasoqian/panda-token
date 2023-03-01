@@ -5,7 +5,10 @@ const {
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 const calGasUsed = require("./utils/calGasUsed.js");
+const { MerkleTree } = require("merkletreejs");
+const SHA256 = require("crypto-js/sha256");
 
+const Buffer = require("buffer/").Buffer;
 const { BigNumber } = require("ethers");
 
 describe("NFT_ERC721", async function () {
@@ -15,12 +18,29 @@ describe("NFT_ERC721", async function () {
   let whiteUser2;
   let nft;
 
+  // whitelist
+  let root;
+  let whiteUser1Proof;
+  let whiteUser2Proof;
+
   beforeEach(async () => {
     const Signers = await ethers.getSigners();
     owner = Signers[0];
     otherUser = Signers[1];
     whiteUser1 = Signers[2];
-    whiteUser2 = Signers[2];
+
+    whiteUser2 = Signers[3];
+
+    console.log(whiteUser1.address);
+
+    const whiteList = [whiteUser1, whiteUser2];
+    const leaves = whiteList.map((addr) => addr.address);
+    const tree = new MerkleTree(leaves, SHA256);
+    root = tree.getRoot().toString("hex");
+    whiteUser1Proof = tree.getProof(whiteUser1.address);
+    whiteUser2Proof = tree.getProof(whiteUser2.address);
+    console.log(tree.verify(whiteUser1Proof, whiteUser1.address, root)); // rue
+    console.log(tree.verify(whiteUser2Proof, whiteUser2.address, root)); // rue
 
     const NFT = await ethers.getContractFactory("NFT_ERC721");
     nft = await NFT.deploy("TEST_NFT", "TN");
@@ -55,7 +75,7 @@ describe("NFT_ERC721", async function () {
     await nft
       .connect(otherUser)
       .setCustomConfig({
-        Root: "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712",
+        Root: "0x" + root.toString(),
         StartSaleTime: 10000,
         ContractURI: "https://support.apple.com/metadata/contractURI.json",
         BaseURI: "https://support.apple.com/contractURI/",
@@ -65,16 +85,14 @@ describe("NFT_ERC721", async function () {
       });
 
     await nft.setCustomConfig({
-      Root: "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712",
+      Root: "0x" + root.toString(),
       StartSaleTime: 10000,
       ContractURI: "https://support.apple.com/metadata/contractURI.json",
       BaseURI: "https://support.apple.com/contractURI/",
     });
 
     const customConfig = await nft.customConfig();
-    expect(customConfig.Root).to.equal(
-      "0x05416460deb76d57af601be17e777b93592d8d4d4a4096c57876a91c84f4a712"
-    );
+    expect(customConfig.Root).to.equal("0x" + root);
     expect(customConfig.StartSaleTime).to.equal(10000);
     expect(customConfig.ContractURI).to.equal(
       "https://support.apple.com/metadata/contractURI.json"
@@ -126,5 +144,27 @@ describe("NFT_ERC721", async function () {
     await nft.adminMint(owner.address, 1).catch((e) => {
       expect(e.message).to.include("OVERFLOW");
     });
+  });
+  it("whitelist mint", async () => {
+    await nft
+      .connect(otherUser)
+      .setRoot("0x" + root)
+      .catch((e) => {
+        expect(e.message).to.include("Ownable: caller is not the owner");
+      });
+
+    await nft.setRoot("0x" + root);
+    await nft.setSaleConfig({
+      SupplyMaximum: 5555,
+      MaximumMint: 5,
+      PublicSale: 2000,
+      WhiteSale: 0,
+    });
+    console.log(
+      "🚀 ~ file: NFT_ERC721.js:166 ~ it ~ Buffer.from(whiteUser1Proof):",
+      whiteUser1Proof.map((i) => i.data.toString("hex"))
+    );
+    const tmp = whiteUser1Proof.map((i) => "0x"+ i.data.toString("hex")+"000000000000000000000000" );
+    await nft.connect(whiteUser1).whiteMint(tmp, 5);
   });
 });

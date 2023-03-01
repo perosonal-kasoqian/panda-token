@@ -13,7 +13,7 @@ contract NFT_ERC721 is ERC721, Ownable {
 
     struct SaleConfig {
         uint SupplyMaximum;
-        uint8 MaximumMint;
+        uint MaximumMint;
         uint PublicSale;
         uint WhiteSale;
     }
@@ -29,7 +29,7 @@ contract NFT_ERC721 is ERC721, Ownable {
     CustomConfig public customConfig;
 
     // contract and token
-    mapping(address => uint8) userHasMint;
+    mapping(address => uint) userHasMint;
 
     constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
         _tokenIds.increment();
@@ -53,7 +53,7 @@ contract NFT_ERC721 is ERC721, Ownable {
         userHasMint[msg.sender] += times;
     }
 
-    function whiteMint(bytes32[] memory proof, uint8 times) external payable {
+    function whiteMint(bytes32[] memory proof, uint times) external payable {
         require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= saleConfig.MaximumMint, "ERR_MINT_OVERFLOW_MAX");
         require(block.timestamp >= customConfig.StartSaleTime, "ERR_NOT_START");
         require(msg.value >= saleConfig.WhiteSale * times, "ERR_NOT_ENOUGH_ETH");
