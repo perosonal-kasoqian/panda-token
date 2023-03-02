@@ -44,9 +44,9 @@ contract NFT_ERC721 is ERC721, Ownable {
     // ============================= SALE ====================================
 
     function publicMint(uint8 times) external payable {
-        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= saleConfig.MaximumMint, "ERR_MINT_OVERFLOW_MAX");
-        require(block.timestamp >= customConfig.StartSaleTime, "ERR_NOT_START");
-        require(msg.value >= saleConfig.PublicSale * times, "ERR_NOT_ENOUGH_ETH");
+        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= saleConfig.MaximumMint, "OVERFLOW");
+        require(block.timestamp >= customConfig.StartSaleTime, "NOT_START");
+        require(msg.value >= saleConfig.PublicSale * times, "NOT_ENOUGH_ETH");
         for (uint i; i < times; i++) {
             mint(msg.sender);
         }
@@ -54,11 +54,10 @@ contract NFT_ERC721 is ERC721, Ownable {
     }
 
     function whiteMint(bytes32[] memory proof, uint times) external payable {
-        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= saleConfig.MaximumMint, "ERR_MINT_OVERFLOW_MAX");
+        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= saleConfig.MaximumMint, "OVERFLOW");
         require(block.timestamp >= customConfig.StartSaleTime, "ERR_NOT_START");
-        require(msg.value >= saleConfig.WhiteSale * times, "ERR_NOT_ENOUGH_ETH");
-
-        require(isWhiteLists(proof, keccak256(abi.encodePacked(msg.sender))),"NOT_WHITELIST");
+        require(msg.value >= saleConfig.WhiteSale * times, "NOT_ENOUGH_ETH");
+        require(isWhiteLists(proof, keccak256(abi.encodePacked(msg.sender))), "NOT_WHITELIST");
         for (uint i; i < saleConfig.MaximumMint; i++) {
             mint(msg.sender);
         }
@@ -86,9 +85,16 @@ contract NFT_ERC721 is ERC721, Ownable {
     }
 
     function adminMint(address reciver, uint times) external onlyOwner {
-        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum,"OVERFLOW");
+        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum, "OVERFLOW");
         for (uint i; i < times; i++) {
             mint(reciver);
+        }
+    }
+
+    function adminBonus(address[] calldata addrs) external onlyOwner {
+        require((_tokenIds.current() + addrs.length - 1) <= saleConfig.SupplyMaximum, "OVERFLOW");
+        for (uint i; i < addrs.length; i++) {
+            mint(addrs[i]);
         }
     }
 

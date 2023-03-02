@@ -19,17 +19,18 @@ describe("NFT_ERC721", async function () {
   let whiteUser2;
   let nft;
 
+  let Signers;
+
   // whitelist
   let root;
   let whiteUser1Proof;
   let whiteUser2Proof;
 
   beforeEach(async () => {
-    const Signers = await ethers.getSigners();
+    Signers = await ethers.getSigners();
     owner = Signers[0];
     otherUser = Signers[1];
     whiteUser1 = Signers[2];
-
     whiteUser2 = Signers[3];
 
     const whiteList = [whiteUser1, whiteUser2];
@@ -163,7 +164,7 @@ describe("NFT_ERC721", async function () {
       .connect(whiteUser1)
       .whiteMint(whiteUser1Proof, 5)
       .catch((e) => {
-        expect(e.message).to.include("ERR_NOT_ENOUGH_ETH");
+        expect(e.message).to.include("NOT_ENOUGH_ETH");
       });
 
     await nft.whiteMint(whiteUser1Proof, 5, { value: 500 }).catch((e) => {
@@ -175,7 +176,7 @@ describe("NFT_ERC721", async function () {
       .connect(whiteUser2)
       .whiteMint(whiteUser2Proof, 1, { value: 100 })
       .catch((e) => {
-        expect(e.message).to.include("ERR_MINT_OVERFLOW_MAX");
+        expect(e.message).to.include("OVERFLOW");
       });
   });
   it("public sales", async function () {
@@ -186,14 +187,32 @@ describe("NFT_ERC721", async function () {
       WhiteSale: 100,
     });
     await nft.publicMint(5).catch((e) => {
-      expect(e.message).to.include("ERR_NOT_ENOUGH_ETH");
+      expect(e.message).to.include("NOT_ENOUGH_ETH");
     });
     await nft.publicMint(6, { value: 12000 }).catch((e) => {
-      expect(e.message).to.include("ERR_MINT_OVERFLOW_MAX");
+      expect(e.message).to.include("OVERFLOW");
     });
     await nft.publicMint(5, { value: 10000 });
     await nft.publicMint(1, { value: 2000 }).catch((e) => {
-      expect(e.message).to.include("ERR_MINT_OVERFLOW_MAX");
+      expect(e.message).to.include("OVERFLOW");
     });
+  });
+  it("bonus kol or others", async () => {
+    await nft.setSaleConfig({
+      SupplyMaximum: 5555,
+      MaximumMint: 5,
+      PublicSale: 2000,
+      WhiteSale: 100,
+    });
+
+    await nft
+      .connect(Signers[3])
+      .adminBonus(Signers.map((i) => i.address))
+      .catch((e) => {
+        expect(e.message).to.include("Ownable: caller is not the owner");
+      });
+    await nft.adminBonus(Signers.map((i) => i.address));
+    const bal = await nft.balanceOf(Signers[5].address);
+    expect(bal).to.equal(1);
   });
 });
