@@ -58,7 +58,7 @@ contract NFT_ERC721 is ERC721, Ownable {
         require(block.timestamp >= customConfig.StartSaleTime, "ERR_NOT_START");
         require(msg.value >= saleConfig.WhiteSale * times, "ERR_NOT_ENOUGH_ETH");
 
-        require(isWhiteLists(proof, keccak256(abi.encodePacked(msg.sender))));
+        require(isWhiteLists(proof, keccak256(abi.encodePacked(msg.sender))),"NOT_WHITELIST");
         for (uint i; i < saleConfig.MaximumMint; i++) {
             mint(msg.sender);
         }

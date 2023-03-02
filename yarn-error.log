@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/bin/yarn add -D dotenv/config
+  /usr/local/bin/node /usr/local/bin/yarn add keccak256 _D
 
 PATH: 
   /bin:/usr/bin:/usr/local/bin:/usr/local/bin:/opt/homebrew/bin:/Users/kasoqian/bin:/usr/local/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/opt/homebrew/bin:/Users/kasoqian/bin:/Users/kasoqian/.cargo/bin:/Users/kasoqian/.foundry/binexport:/Users/kasoqian/.foundry/binexport
@@ -14,16 +14,17 @@ Platform:
   darwin arm64
 
 Trace: 
-  Error: https://github.com/dotenv/config: ESOCKETTIMEDOUT
-      at ClientRequest.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:141517:19)
+  Error: https://registry.yarnpkg.com/_D: Not found
+      at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:66145:18)
+      at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:140890:22)
+      at Request.emit (node:events:513:28)
+      at Request.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:141862:10)
+      at Request.emit (node:events:513:28)
+      at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:141784:12)
       at Object.onceWrapper (node:events:627:28)
-      at ClientRequest.emit (node:events:513:28)
-      at TLSSocket.emitRequestTimeout (node:_http_client:814:9)
-      at Object.onceWrapper (node:events:627:28)
-      at TLSSocket.emit (node:events:525:35)
-      at TLSSocket.Socket._onTimeout (node:net:526:8)
-      at listOnTimeout (node:internal/timers:559:17)
-      at processTimers (node:internal/timers:502:7)
+      at IncomingMessage.emit (node:events:525:35)
+      at endReadableNT (node:internal/streams/readable:1358:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
 
 npm manifest: 
   {
@@ -37,8 +38,10 @@ npm manifest:
     "devDependencies": {
       "@nomicfoundation/hardhat-toolbox": "^2.0.1",
       "@openzeppelin/contracts": "^4.8.1",
+      "dotenv": "^16.0.3",
       "hardhat": "^2.12.7",
-      "hardhat-contract-sizer": "^2.8.0"
+      "hardhat-contract-sizer": "^2.8.0",
+      "merkletreejs": "^0.3.9"
     },
     "dependencies": {
       "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
@@ -1294,6 +1297,11 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/bigint-mod-arith/-/bigint-mod-arith-3.1.2.tgz#658e416bc593a463d97b59766226d0a3021a76b1"
     integrity sha512-nx8J8bBeiRR+NlsROFH9jHswW5HO8mgfOSqW0AmjicMMvaONDa8AO+5ViKDUUNytBPWiwfvZP4/Bj4Y3lUfvgQ==
   
+  bignumber.js@^9.0.1:
+    version "9.1.1"
+    resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.1.1.tgz#c4df7dc496bd849d4c9464344c1aa74228b4dac6"
+    integrity sha512-pHm4LsMJ6lzgNGVfZHjMoO8sdoRhOzOH4MLmY65Jg70bpxCKu5iOHNJyfF6OyvYw7t8Fpf35RuzUyqnQsj8Vig==
+  
   binary-extensions@^2.0.0:
     version "2.2.0"
     resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.2.0.tgz#75f502eeaf9ffde42fc98829645be4ea76bd9e2d"
@@ -1393,6 +1401,11 @@ Lockfile:
     version "1.1.2"
     resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.2.tgz#2b146a6fd72e80b4f55d255f35ed59a3a9a41bd5"
     integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
+  
+  buffer-reverse@^1.0.1:
+    version "1.0.1"
+    resolved "https://registry.yarnpkg.com/buffer-reverse/-/buffer-reverse-1.0.1.tgz#49283c8efa6f901bc01fa3304d06027971ae2f60"
+    integrity sha512-M87YIUBsZ6N924W57vDwT/aOu8hw7ZgdByz6ijksLjmHJELBASmYTTlNHRgjE+pTsT9oJXGaDSgqqwfdHotDUg==
   
   buffer-xor@^1.0.3:
     version "1.0.3"
@@ -1731,6 +1744,11 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/crypt/-/crypt-0.0.2.tgz#88d7ff7ec0dfb86f713dc87bbb42d044d3e6c41b"
     integrity sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==
   
+  crypto-js@^3.1.9-1:
+    version "3.3.0"
+    resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-3.3.0.tgz#846dd1cce2f68aacfa156c8578f926a609b7976b"
+    integrity sha512-DIT51nX0dCfKltpRiXV+/TVZq+Qq2NgF4644+K7Ttnla7zEzqc+kjJyiB96BHNyUTBxyjzRcZYpUdZa+QAqi6Q==
+  
   dashdash@^1.12.0:
     version "1.14.1"
     resolved "https://registry.yarnpkg.com/dashdash/-/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
@@ -1838,6 +1856,11 @@ Lockfile:
     integrity sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==
     dependencies:
       path-type "^4.0.0"
+  
+  dotenv@^16.0.3:
+    version "16.0.3"
+    resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.0.3.tgz#115aec42bac5053db3c456db30cc243a5a836a07"
+    integrity sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==
   
   ecc-jsbn@~0.1.1:
     version "0.1.2"
@@ -3303,6 +3326,17 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/merge2/-/merge2-1.4.1.tgz#4368892f885e907455a6fd7dc55c0c9d404990ae"
     integrity sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==
   
+  merkletreejs@^0.3.9:
+    version "0.3.9"
+    resolved "https://registry.yarnpkg.com/merkletreejs/-/merkletreejs-0.3.9.tgz#cdb364a3b974a44f4eff3446522d7066e0cf95de"
+    integrity sha512-NjlATjJr4NEn9s8v/VEHhgwRWaE1eA/Une07d9SEqKzULJi1Wsh0Y3svwJdP2bYLMmgSBHzOrNydMWM1NN9VeQ==
+    dependencies:
+      bignumber.js "^9.0.1"
+      buffer-reverse "^1.0.1"
+      crypto-js "^3.1.9-1"
+      treeify "^1.1.0"
+      web3-utils "^1.3.4"
+  
   micromatch@^4.0.4:
     version "4.0.5"
     resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-4.0.5.tgz#bc8999a7cbbf77cdc89f132f6e467051b49090c6"
@@ -4514,6 +4548,11 @@ Lockfile:
       psl "^1.1.28"
       punycode "^2.1.1"
   
+  treeify@^1.1.0:
+    version "1.1.0"
+    resolved "https://registry.yarnpkg.com/treeify/-/treeify-1.1.0.tgz#4e31c6a463accd0943879f30667c4fdaff411bb8"
+    integrity sha512-1m4RA7xVAJrSGrrXGs0L3YTwyvBs2S8PbRHaLZAkFw7JR8oIFwYtysxlBZhYIa7xSyiYJKZ3iGrrk55cGA3i9A==
+  
   ts-command-line-args@^2.2.0:
     version "2.4.2"
     resolved "https://registry.yarnpkg.com/ts-command-line-args/-/ts-command-line-args-2.4.2.tgz#b4815b23c35f8a0159d4e69e01012d95690bc448"
@@ -4736,7 +4775,7 @@ Lockfile:
       core-util-is "1.0.2"
       extsprintf "^1.2.0"
   
-  web3-utils@^1.3.6:
+  web3-utils@^1.3.4, web3-utils@^1.3.6:
     version "1.8.2"
     resolved "https://registry.yarnpkg.com/web3-utils/-/web3-utils-1.8.2.tgz#c32dec5e9b955acbab220eefd7715bc540b75cc9"
     integrity sha512-v7j6xhfLQfY7xQDrUP0BKbaNrmZ2/+egbqP9q3KYmOiPpnvAfol+32slgL0WX/5n8VPvKCK5EZ1HGrAVICSToA==

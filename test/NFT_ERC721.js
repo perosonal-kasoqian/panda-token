@@ -7,6 +7,7 @@ const { expect } = require("chai");
 const calGasUsed = require("./utils/calGasUsed.js");
 const { MerkleTree } = require("merkletreejs");
 const SHA256 = require("crypto-js/sha256");
+const keccak256 = require("keccak256");
 
 const Buffer = require("buffer/").Buffer;
 const { BigNumber } = require("ethers");
@@ -31,16 +32,13 @@ describe("NFT_ERC721", async function () {
 
     whiteUser2 = Signers[3];
 
-    console.log(whiteUser1.address);
-
     const whiteList = [whiteUser1, whiteUser2];
-    const leaves = whiteList.map((addr) => addr.address);
-    const tree = new MerkleTree(leaves, SHA256);
-    root = tree.getRoot().toString("hex");
-    whiteUser1Proof = tree.getProof(whiteUser1.address);
-    whiteUser2Proof = tree.getProof(whiteUser2.address);
-    console.log(tree.verify(whiteUser1Proof, whiteUser1.address, root)); // rue
-    console.log(tree.verify(whiteUser2Proof, whiteUser2.address, root)); // rue
+    const leaves = whiteList.map((addr) => keccak256(addr.address));
+    const tree = new MerkleTree(leaves, keccak256, { sort: true });
+    root = tree.getHexRoot();
+
+    whiteUser1Proof = tree.getHexProof(keccak256(whiteUser1.address));
+    whiteUser2Proof = tree.getHexProof(keccak256(whiteUser2.address));
 
     const NFT = await ethers.getContractFactory("NFT_ERC721");
     nft = await NFT.deploy("TEST_NFT", "TN");
@@ -75,7 +73,7 @@ describe("NFT_ERC721", async function () {
     await nft
       .connect(otherUser)
       .setCustomConfig({
-        Root: "0x" + root.toString(),
+        Root: root,
         StartSaleTime: 10000,
         ContractURI: "https://support.apple.com/metadata/contractURI.json",
         BaseURI: "https://support.apple.com/contractURI/",
@@ -85,14 +83,14 @@ describe("NFT_ERC721", async function () {
       });
 
     await nft.setCustomConfig({
-      Root: "0x" + root.toString(),
+      Root: root,
       StartSaleTime: 10000,
       ContractURI: "https://support.apple.com/metadata/contractURI.json",
       BaseURI: "https://support.apple.com/contractURI/",
     });
 
     const customConfig = await nft.customConfig();
-    expect(customConfig.Root).to.equal("0x" + root);
+    expect(customConfig.Root).to.equal(root);
     expect(customConfig.StartSaleTime).to.equal(10000);
     expect(customConfig.ContractURI).to.equal(
       "https://support.apple.com/metadata/contractURI.json"
@@ -145,26 +143,57 @@ describe("NFT_ERC721", async function () {
       expect(e.message).to.include("OVERFLOW");
     });
   });
-//   it("whitelist mint", async () => {
-//     await nft
-//       .connect(otherUser)
-//       .setRoot("0x" + root)
-//       .catch((e) => {
-//         expect(e.message).to.include("Ownable: caller is not the owner");
-//       });
+  it("whitelist mint", async () => {
+    await nft
+      .connect(otherUser)
+      .setRoot(root)
+      .catch((e) => {
+        expect(e.message).to.include("Ownable: caller is not the owner");
+      });
 
-//     await nft.setRoot("0x" + root);
-//     await nft.setSaleConfig({
-//       SupplyMaximum: 5555,
-//       MaximumMint: 5,
-//       PublicSale: 2000,
-//       WhiteSale: 0,
-//     });
-//     console.log(
-//       "🚀 ~ file: NFT_ERC721.js:166 ~ it ~ Buffer.from(whiteUser1Proof):",
-//       whiteUser1Proof.map((i) => i.data.toString("hex"))
-//     );
-//     const tmp = whiteUser1Proof.map((i) => "0x"+ i.data.toString("hex")+"000000000000000000000000" );
-//     await nft.connect(whiteUser1).whiteMint(tmp, 5);
-//   });
+    await nft.setRoot(root);
+    await nft.setSaleConfig({
+      SupplyMaximum: 5555,
+      MaximumMint: 5,
+      PublicSale: 2000,
+      WhiteSale: 100,
+    });
+
+    await nft
+      .connect(whiteUser1)
+      .whiteMint(whiteUser1Proof, 5)
+      .catch((e) => {
+        expect(e.message).to.include("ERR_NOT_ENOUGH_ETH");
+      });
+
+    await nft.whiteMint(whiteUser1Proof, 5, { value: 500 }).catch((e) => {
+      expect(e.message).to.include("NOT_WHITELIST");
+    });
+    await nft.connect(whiteUser1).whiteMint(whiteUser1Proof, 5, { value: 500 });
+    await nft.connect(whiteUser2).whiteMint(whiteUser2Proof, 5, { value: 500 });
+    await nft
+      .connect(whiteUser2)
+      .whiteMint(whiteUser2Proof, 1, { value: 100 })
+      .catch((e) => {
+        expect(e.message).to.include("ERR_MINT_OVERFLOW_MAX");
+      });
+  });
+  it("public sales", async function () {
+    await nft.setSaleConfig({
+      SupplyMaximum: 5555,
+      MaximumMint: 5,
+      PublicSale: 2000,
+      WhiteSale: 100,
+    });
+    await nft.publicMint(5).catch((e) => {
+      expect(e.message).to.include("ERR_NOT_ENOUGH_ETH");
+    });
+    await nft.publicMint(6, { value: 12000 }).catch((e) => {
+      expect(e.message).to.include("ERR_MINT_OVERFLOW_MAX");
+    });
+    await nft.publicMint(5, { value: 10000 });
+    await nft.publicMint(1, { value: 2000 }).catch((e) => {
+      expect(e.message).to.include("ERR_MINT_OVERFLOW_MAX");
+    });
+  });
 });
