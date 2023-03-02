@@ -8,7 +8,7 @@ const hre = require("hardhat");
 
 async function main() {
   const config = {
-    name: "TEST NFT",
+    name: "TEST_NFT",
     symbol: "TN",
     contractURI: "none",
     baseURI: "none",
