@@ -6,8 +6,11 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-contract NFT_ERC721 is ERC721, Ownable {
+import "hardhat/console.sol";
+
+contract PandaNFT is ERC721, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -21,6 +24,7 @@ contract NFT_ERC721 is ERC721, Ownable {
     struct CustomConfig {
         bytes32 Root;
         uint StartSaleTime;
+        address PandaToken;
         string ContractURI;
         string BaseURI;
     }
@@ -47,14 +51,16 @@ contract NFT_ERC721 is ERC721, Ownable {
         require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= saleConfig.MaximumMint, "OVERFLOW");
         require(block.timestamp >= customConfig.StartSaleTime, "NOT_START");
         require(msg.value >= saleConfig.PublicSale * times, "NOT_ENOUGH_ETH");
+
         for (uint i; i < times; i++) {
             mint(msg.sender);
         }
         userHasMint[msg.sender] += times;
+        IERC20(customConfig.PandaToken).transfer(msg.sender, 500 * times);
     }
 
     function whiteMint(bytes32[] memory proof, uint times) external payable {
-        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= saleConfig.MaximumMint, "OVERFLOW");
+        require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum && (userHasMint[msg.sender] + times) <= 1, "OVERFLOW");
         require(block.timestamp >= customConfig.StartSaleTime, "ERR_NOT_START");
         require(msg.value >= saleConfig.WhiteSale * times, "NOT_ENOUGH_ETH");
         require(isWhiteLists(proof, keccak256(abi.encodePacked(msg.sender))), "NOT_WHITELIST");
@@ -62,6 +68,7 @@ contract NFT_ERC721 is ERC721, Ownable {
             mint(msg.sender);
         }
         userHasMint[msg.sender] += times;
+        IERC20(customConfig.PandaToken).transfer(msg.sender, 500);
     }
 
     function isWhiteLists(bytes32[] memory proof, bytes32 leaf) private view returns (bool) {
@@ -82,6 +89,10 @@ contract NFT_ERC721 is ERC721, Ownable {
 
     function setRoot(bytes32 root) external onlyOwner {
         customConfig.Root = root;
+    }
+
+    function setTokenAddress(address pandaToken) external onlyOwner {
+        customConfig.PandaToken = pandaToken;
     }
 
     function adminMint(address reciver, uint times) external onlyOwner {

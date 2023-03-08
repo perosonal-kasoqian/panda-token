@@ -26,6 +26,8 @@ describe("NFT_ERC721", async function () {
   let whiteUser1Proof;
   let whiteUser2Proof;
 
+  let panda;
+
   beforeEach(async () => {
     Signers = await ethers.getSigners();
     owner = Signers[0];
@@ -41,15 +43,21 @@ describe("NFT_ERC721", async function () {
     whiteUser1Proof = tree.getHexProof(keccak256(whiteUser1.address));
     whiteUser2Proof = tree.getHexProof(keccak256(whiteUser2.address));
 
-    const NFT = await ethers.getContractFactory("NFT_ERC721");
-    nft = await NFT.deploy("TEST_NFT", "TN");
+    const NFT = await ethers.getContractFactory("PandaNFT");
+    nft = await NFT.deploy("Voyager Panda", "VP");
 
-    return nft;
+    const Panda = await ethers.getContractFactory("PandaToken");
+    panda = await Panda.deploy();
+
+    await panda.mint(owner.address, 1000000000);
+    await panda.transfer(nft.address, 2023 * 500);
+
+    await nft.setTokenAddress(panda.address);
   });
 
   it("deployment information check", async function () {
-    expect(await nft.name()).to.equal("TEST_NFT");
-    expect(await nft.symbol()).to.equal("TN");
+    expect(await nft.name()).to.equal("Voyager Panda");
+    expect(await nft.symbol()).to.equal("VP");
   });
 
   it("send native token and withdrew", async () => {
@@ -75,6 +83,7 @@ describe("NFT_ERC721", async function () {
       .connect(otherUser)
       .setCustomConfig({
         Root: root,
+        PandaToken: panda.address,
         StartSaleTime: 10000,
         ContractURI: "https://support.apple.com/metadata/contractURI.json",
         BaseURI: "https://support.apple.com/contractURI/",
@@ -85,6 +94,7 @@ describe("NFT_ERC721", async function () {
 
     await nft.setCustomConfig({
       Root: root,
+      PandaToken: panda.address,
       StartSaleTime: 10000,
       ContractURI: "https://support.apple.com/metadata/contractURI.json",
       BaseURI: "https://support.apple.com/contractURI/",
@@ -162,23 +172,29 @@ describe("NFT_ERC721", async function () {
 
     await nft
       .connect(whiteUser1)
-      .whiteMint(whiteUser1Proof, 5)
+      .whiteMint(whiteUser1Proof, 1)
       .catch((e) => {
         expect(e.message).to.include("NOT_ENOUGH_ETH");
       });
 
-    await nft.whiteMint(whiteUser1Proof, 5, { value: 500 }).catch((e) => {
+    await nft.whiteMint(whiteUser1Proof, 1, { value: 100 }).catch((e) => {
       expect(e.message).to.include("NOT_WHITELIST");
     });
-    await nft.connect(whiteUser1).whiteMint(whiteUser1Proof, 5, { value: 500 });
-    await nft.connect(whiteUser2).whiteMint(whiteUser2Proof, 5, { value: 500 });
+    await nft.connect(whiteUser1).whiteMint(whiteUser1Proof, 1, { value: 100 });
+    await nft.connect(whiteUser2).whiteMint(whiteUser2Proof, 1, { value: 100 });
     await nft
       .connect(whiteUser2)
       .whiteMint(whiteUser2Proof, 1, { value: 100 })
       .catch((e) => {
         expect(e.message).to.include("OVERFLOW");
       });
+
+    const b1 = await panda.balanceOf(whiteUser1.address);
+    const b2 = await panda.balanceOf(whiteUser2.address);
+    expect(b1).to.equal(500);
+    expect(b1).to.equal(b2);
   });
+
   it("public sales", async function () {
     await nft.setSaleConfig({
       SupplyMaximum: 5555,
@@ -196,6 +212,9 @@ describe("NFT_ERC721", async function () {
     await nft.publicMint(1, { value: 2000 }).catch((e) => {
       expect(e.message).to.include("OVERFLOW");
     });
+
+    const b1 = await panda.balanceOf(owner.address);
+    expect(b1).to.equal(2500 + 1000000000 - 2023 * 500);
   });
   it("bonus kol or others", async () => {
     await nft.setSaleConfig({
