@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+// import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "erc721a/contracts/ERC721A.sol";
 
-import "hardhat/console.sol";
-
-contract PandaNFT is ERC721, Ownable {
+contract PandaNFT is ERC721A, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -35,13 +34,7 @@ contract PandaNFT is ERC721, Ownable {
     // contract and token
     mapping(address => uint) userHasMint;
 
-    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
-        _tokenIds.increment();
-    }
-
-    function mint(address player) private {
-        uint tokenId = _tokenIds.current();
-        _mint(player, tokenId);
+    constructor(string memory _name, string memory _symbol) ERC721A(_name, _symbol) {
         _tokenIds.increment();
     }
 
@@ -52,9 +45,8 @@ contract PandaNFT is ERC721, Ownable {
         require(block.timestamp >= customConfig.StartSaleTime, "NOT_START");
         require(msg.value >= saleConfig.PublicSale * times, "NOT_ENOUGH_ETH");
 
-        for (uint i; i < times; i++) {
-            mint(msg.sender);
-        }
+        _mint(msg.sender, times);
+
         userHasMint[msg.sender] += times;
         IERC20(customConfig.PandaToken).transfer(msg.sender, 500 * times);
     }
@@ -64,9 +56,9 @@ contract PandaNFT is ERC721, Ownable {
         require(block.timestamp >= customConfig.StartSaleTime, "ERR_NOT_START");
         require(msg.value >= saleConfig.WhiteSale * times, "NOT_ENOUGH_ETH");
         require(isWhiteLists(proof, keccak256(abi.encodePacked(msg.sender))), "NOT_WHITELIST");
-        for (uint i; i < times; i++) {
-            mint(msg.sender);
-        }
+
+        _mint(msg.sender, 1);
+
         userHasMint[msg.sender] += times;
         IERC20(customConfig.PandaToken).transfer(msg.sender, 500);
     }
@@ -97,15 +89,13 @@ contract PandaNFT is ERC721, Ownable {
 
     function adminMint(address reciver, uint times) external onlyOwner {
         require((_tokenIds.current() + times - 1) <= saleConfig.SupplyMaximum, "OVERFLOW");
-        for (uint i; i < times; i++) {
-            mint(reciver);
-        }
+        _mint(reciver, times);
     }
 
     function adminBonus(address[] calldata addrs) external onlyOwner {
         require((_tokenIds.current() + addrs.length - 1) <= saleConfig.SupplyMaximum, "OVERFLOW");
         for (uint i; i < addrs.length; i++) {
-            mint(addrs[i]);
+            _mint(addrs[i], 1);
         }
     }
 
