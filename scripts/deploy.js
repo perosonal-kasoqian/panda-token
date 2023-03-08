@@ -7,7 +7,7 @@
 const { ethers } = require("hardhat");
 const hre = require("hardhat");
 
-const toWei = (value) => value.toString() + "1000000000000000000";
+const toWei = (value) => value.toString() + "000000000000000000";
 
 async function main() {
   const Signers = await ethers.getSigners();
@@ -19,7 +19,9 @@ async function main() {
   const token = await Token.deploy();
   await token.deployed();
 
-  await token.mint(Signers[0].address, toWei(1000000000));
+  const tx =  await token.mint(Signers[0].address, toWei(1000000000));
+  await tx.wait()
+
   await token.transfer(nft.address, toWei(2023 * 500));
   await nft.setTokenInfo({
     PandaToken: token.address,
