@@ -52,7 +52,10 @@ describe("NFT_ERC721", async function () {
     await panda.mint(owner.address, 1000000000);
     await panda.transfer(nft.address, 2023 * 500);
 
-    await nft.setTokenAddress(panda.address);
+    await nft.setTokenInfo({
+      PandaToken: panda.address,
+      PreReward: 500,
+    });
   });
 
   it("deployment information check", async function () {
@@ -83,7 +86,6 @@ describe("NFT_ERC721", async function () {
       .connect(otherUser)
       .setCustomConfig({
         Root: root,
-        PandaToken: panda.address,
         StartSaleTime: 10000,
         ContractURI: "https://support.apple.com/metadata/contractURI.json",
         BaseURI: "https://support.apple.com/contractURI/",
@@ -94,7 +96,6 @@ describe("NFT_ERC721", async function () {
 
     await nft.setCustomConfig({
       Root: root,
-      PandaToken: panda.address,
       StartSaleTime: 10000,
       ContractURI: "https://support.apple.com/metadata/contractURI.json",
       BaseURI: "https://support.apple.com/contractURI/",

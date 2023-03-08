@@ -23,13 +23,18 @@ contract PandaNFT is ERC721A, Ownable {
     struct CustomConfig {
         bytes32 Root;
         uint StartSaleTime;
-        address PandaToken;
         string ContractURI;
         string BaseURI;
     }
 
+    struct GameToken {
+        address PandaToken;
+        uint PreReward;
+    }
+
     SaleConfig public saleConfig;
     CustomConfig public customConfig;
+    GameToken public gameToken;
 
     // contract and token
     mapping(address => uint) userHasMint;
@@ -48,7 +53,7 @@ contract PandaNFT is ERC721A, Ownable {
         _mint(msg.sender, times);
 
         userHasMint[msg.sender] += times;
-        IERC20(customConfig.PandaToken).transfer(msg.sender, 500 * times);
+        IERC20(gameToken.PandaToken).transfer(msg.sender, gameToken.PreReward * times);
     }
 
     function whiteMint(bytes32[] memory proof, uint times) external payable {
@@ -60,7 +65,7 @@ contract PandaNFT is ERC721A, Ownable {
         _mint(msg.sender, 1);
 
         userHasMint[msg.sender] += times;
-        IERC20(customConfig.PandaToken).transfer(msg.sender, 500);
+        IERC20(gameToken.PandaToken).transfer(msg.sender, gameToken.PreReward);
     }
 
     function isWhiteLists(bytes32[] memory proof, bytes32 leaf) private view returns (bool) {
@@ -83,8 +88,8 @@ contract PandaNFT is ERC721A, Ownable {
         customConfig.Root = root;
     }
 
-    function setTokenAddress(address pandaToken) external onlyOwner {
-        customConfig.PandaToken = pandaToken;
+    function setTokenInfo(GameToken calldata tokenInfo) external onlyOwner {
+        gameToken = tokenInfo;
     }
 
     function adminMint(address reciver, uint times) external onlyOwner {
