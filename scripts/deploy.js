@@ -19,14 +19,18 @@ async function main() {
   const token = await Token.deploy();
   await token.deployed();
 
-  const tx =  await token.mint(Signers[0].address, toWei(1000000000));
-  await tx.wait()
+  const tx = await token.mint(Signers[0].address, toWei(1000000000));
+  await tx.wait();
 
-  await token.transfer(nft.address, toWei(2023 * 500));
-  await nft.setTokenInfo({
+  const tx2 = await token.transfer(nft.address, toWei(2023 * 500));
+  await tx2.wait();
+
+  const tx3 = await nft.setTokenInfo({
     PandaToken: token.address,
     PreReward: toWei(500),
   });
+
+  await tx3.wait();
 
   console.log(token.address);
   console.log(nft.address);
