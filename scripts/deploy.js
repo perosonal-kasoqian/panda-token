@@ -7,25 +7,20 @@
 const hre = require("hardhat");
 
 async function main() {
-  const config = {
-    name: "TEST_NFT",
-    symbol: "TN",
-    contractURI: "none",
-    baseURI: "none",
-    startTime: 0,
-  };
-
-  const NFT = await hre.ethers.getContractFactory("NFT_ERC721");
-  const nft = await NFT.deploy(
-    config.name,
-    config.symbol,
-    // config.contractURI,
-    // config.baseURI,
-    // config.startTime
-  );
-
+  const Signers = await ethers.getSigners();
+  const NFT = await hre.ethers.getContractFactory("PandaNFT");
+  const nft = await NFT.deploy("Test_NFT", "TN");
   await nft.deployed();
 
+  const Token = await hre.ethers.getContractFactory("PandaToken");
+  const token = await Token.deploy();
+  await token.deployed();
+
+  await token.mint(Signers[0].address, 1000000000);
+  await token.transfer(nft.address, 2023 * 500);
+  await nft.setTokenAddress(token.address);
+
+  console.log(token.address);
   console.log(nft.address);
 }
 

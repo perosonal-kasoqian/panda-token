@@ -5,7 +5,8 @@
     "deploy": "hardhat run scripts/deploy.js",
     "deploy:goerli": "hardhat run scripts/deploy.js --network goerli",
     "test": "hardhat test",
-    "cov": "hardhat coverage"
+    "cov": "hardhat coverage",
+    "verify": " hardhat verify --network goerli"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.1",
