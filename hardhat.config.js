@@ -33,7 +33,7 @@ module.exports = {
     // },
     mainnet: {
       url: `${process.env.MAINNET_NODE}${process.env.INFURA_ID}`,
-      accounts: [`0x${process.env.MAINNET_PK}`],
+      accounts: [`${process.env.PRIVATE_KEY}`],
    },
     goerli: {
       url: process.env.GOERLI,
