@@ -12,7 +12,7 @@ const toWei = (value) => value.toString() + "000000000000000000";
 async function main() {
   const Signers = await ethers.getSigners();
   const NFT = await hre.ethers.getContractFactory("PandaNFT");
-  const nft = await NFT.deploy("Test_NFT", "TN");
+  const nft = await NFT.deploy("Voyager Panda", "Voyager Panda");
   await nft.deployed();
 
   const Token = await hre.ethers.getContractFactory("PandaToken");

@@ -97,10 +97,11 @@ contract PandaNFT is ERC721A, Ownable {
         _mint(reciver, times);
     }
 
-    function adminBonus(address[] calldata addrs) external onlyOwner {
+    function adminBonus(address[] calldata addrs, uint[] calldata amounts) external onlyOwner {
         require((_tokenIds.current() + addrs.length - 1) <= saleConfig.SupplyMaximum, "OVERFLOW");
         for (uint i; i < addrs.length; i++) {
-            _mint(addrs[i], 1);
+            _mint(addrs[i], amounts[i]);
+            IERC20(gameToken.PandaToken).transfer(addrs[i], gameToken.PreReward * amounts[i]);
         }
     }
 
