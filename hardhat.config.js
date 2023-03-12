@@ -31,6 +31,10 @@ module.exports = {
     // forking: {
     //   url: "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
     // },
+    mainnet: {
+      url: `${process.env.MAINNET_NODE}${process.env.INFURA_ID}`,
+      accounts: [`0x${process.env.MAINNET_PK}`],
+   },
     goerli: {
       url: process.env.GOERLI,
       saveDeployments: true,
